@@ -1,0 +1,13 @@
+.{
+    .name = .iobackport,
+    .version = "0.0.0",
+    .fingerprint = 0xf0fa50567890e529,
+    .zig_version = "0.14.1",
+    .minimum_zig_version = "0.14.0",
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "example",
+        "src",
+    },
+}
