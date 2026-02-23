@@ -794,7 +794,7 @@ pub const Writer = struct {
                 hdtr_data = .{
                     .headers = &headers,
                     .hdr_cnt = headers_i,
-                    .trailers = null,
+                    .trailers = &.{},
                     .trl_cnt = 0,
                 };
                 break :b &hdtr_data;
