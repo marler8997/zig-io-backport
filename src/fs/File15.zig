@@ -24,9 +24,9 @@ const Stat = @import("std").fs.File.Stat;
 const StatError = posix.FStatError;
 
 const stat = @import("std").fs.File.stat;
-const ReadError = posix.ReadError;
+pub const ReadError = posix.ReadError;
 
-const WriteError = posix.WriteError;
+pub const WriteError = posix.WriteError;
 
 pub const Reader = struct {
     file: File,
