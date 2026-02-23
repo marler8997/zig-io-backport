@@ -1,3 +1,5 @@
+pub const ArrayListUnmanaged = @import("std").ArrayListUnmanaged;
+
 pub const Io = @import("Io.zig");
 pub const builtin = @import("std").builtin;
 pub const c = @import("std").c;
