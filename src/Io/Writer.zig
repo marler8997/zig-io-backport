@@ -356,19 +356,19 @@ pub fn writableSliceGreedyPreserve(w: *Writer, preserve: usize, minimum_len: usi
     return w.buffer[w.end..];
 }
 
-// /// Asserts the provided buffer has total capacity enough for `len`.
-// ///
-// /// Advances the buffer end position by `len`.
-// ///
-// /// When draining the buffer, ensures that at least `preserve` bytes
-// /// remain buffered.
-// ///
-// /// If `preserve` is zero, this is equivalent to `writableSlice`.
-// pub fn writableSlicePreserve(w: *Writer, preserve: usize, len: usize) Error![]u8 {
-//     const big_slice = try w.writableSliceGreedyPreserve(preserve, len);
-//     advance(w, len);
-//     return big_slice[0..len];
-// }
+/// Asserts the provided buffer has total capacity enough for `len`.
+///
+/// Advances the buffer end position by `len`.
+///
+/// When draining the buffer, ensures that at least `preserve` bytes
+/// remain buffered.
+///
+/// If `preserve` is zero, this is equivalent to `writableSlice`.
+pub fn writableSlicePreserve(w: *Writer, preserve: usize, len: usize) Error![]u8 {
+    const big_slice = try w.writableSliceGreedyPreserve(preserve, len);
+    advance(w, len);
+    return big_slice[0..len];
+}
 
 // pub fn ensureUnusedCapacity(w: *Writer, n: usize) Error!void {
 //     _ = try writableSliceGreedy(w, n);
@@ -499,19 +499,19 @@ pub fn writeByte(w: *Writer, byte: u8) Error!void {
     }
 }
 
-// /// When draining the buffer, ensures that at least `preserve` bytes
-// /// remain buffered.
-// pub fn writeBytePreserve(w: *Writer, preserve: usize, byte: u8) Error!void {
-//     if (w.buffer.len - w.end != 0) {
-//         @branchHint(.likely);
-//         w.buffer[w.end] = byte;
-//         w.end += 1;
-//         return;
-//     }
-//     try w.vtable.rebase(w, preserve, 1);
-//     w.buffer[w.end] = byte;
-//     w.end += 1;
-// }
+/// When draining the buffer, ensures that at least `preserve` bytes
+/// remain buffered.
+pub fn writeBytePreserve(w: *Writer, preserve: usize, byte: u8) Error!void {
+    if (w.buffer.len - w.end != 0) {
+        @branchHint(.likely);
+        w.buffer[w.end] = byte;
+        w.end += 1;
+        return;
+    }
+    try w.vtable.rebase(w, preserve, 1);
+    w.buffer[w.end] = byte;
+    w.end += 1;
+}
 
 /// Writes the same byte many times, performing the underlying write call as
 /// many times as necessary.
@@ -2125,19 +2125,19 @@ pub fn fixedDrain(w: *Writer, data: []const []const u8, splat: usize) Error!usiz
     }
 }
 
-// pub fn unreachableDrain(w: *Writer, data: []const []const u8, splat: usize) Error!usize {
-//     _ = w;
-//     _ = data;
-//     _ = splat;
-//     unreachable;
-// }
+pub fn unreachableDrain(w: *Writer, data: []const []const u8, splat: usize) Error!usize {
+    _ = w;
+    _ = data;
+    _ = splat;
+    unreachable;
+}
 
-// pub fn unreachableRebase(w: *Writer, preserve: usize, capacity: usize) Error!void {
-//     _ = w;
-//     _ = preserve;
-//     _ = capacity;
-//     unreachable;
-// }
+pub fn unreachableRebase(w: *Writer, preserve: usize, capacity: usize) Error!void {
+    _ = w;
+    _ = preserve;
+    _ = capacity;
+    unreachable;
+}
 
 // /// Provides a `Writer` implementation based on calling `Hasher.update`, sending
 // /// all data also to an underlying `Writer`.

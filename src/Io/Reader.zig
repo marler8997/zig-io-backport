@@ -389,24 +389,24 @@ pub fn peek(r: *Reader, n: usize) Error![]u8 {
     return r.buffer[r.seek..][0..n];
 }
 
-// /// Returns all the next buffered bytes, after filling the buffer to ensure it
-// /// contains at least `n` bytes.
-// ///
-// /// Invalidates previously returned values from `peek` and `peekGreedy`.
-// ///
-// /// Asserts that the `Reader` was initialized with a buffer capacity at
-// /// least as big as `n`.
-// ///
-// /// If there are fewer than `n` bytes left in the stream, `error.EndOfStream`
-// /// is returned instead.
-// ///
-// /// See also:
-// /// * `peek`
-// /// * `toss`
-// pub fn peekGreedy(r: *Reader, n: usize) Error![]u8 {
-//     try r.fill(n);
-//     return r.buffer[r.seek..r.end];
-// }
+/// Returns all the next buffered bytes, after filling the buffer to ensure it
+/// contains at least `n` bytes.
+///
+/// Invalidates previously returned values from `peek` and `peekGreedy`.
+///
+/// Asserts that the `Reader` was initialized with a buffer capacity at
+/// least as big as `n`.
+///
+/// If there are fewer than `n` bytes left in the stream, `error.EndOfStream`
+/// is returned instead.
+///
+/// See also:
+/// * `peek`
+/// * `toss`
+pub fn peekGreedy(r: *Reader, n: usize) Error![]u8 {
+    try r.fill(n);
+    return r.buffer[r.seek..r.end];
+}
 
 pub fn toss(r: *Reader, n: usize) void {
     r.seek += n;
@@ -443,21 +443,21 @@ pub fn takeArray(r: *Reader, comptime n: usize) Error!*[n]u8 {
     return (try r.take(n))[0..n];
 }
 
-// /// Returns the next `n` bytes from the stream as an array, filling the buffer
-// /// as necessary, without advancing the seek position.
-// ///
-// /// Asserts that the `Reader` was initialized with a buffer capacity at
-// /// least as big as `n`.
-// ///
-// /// If there are fewer than `n` bytes left in the stream, `error.EndOfStream`
-// /// is returned instead.
-// ///
-// /// See also:
-// /// * `peek`
-// /// * `takeArray`
-// pub fn peekArray(r: *Reader, comptime n: usize) Error!*[n]u8 {
-//     return (try r.peek(n))[0..n];
-// }
+/// Returns the next `n` bytes from the stream as an array, filling the buffer
+/// as necessary, without advancing the seek position.
+///
+/// Asserts that the `Reader` was initialized with a buffer capacity at
+/// least as big as `n`.
+///
+/// If there are fewer than `n` bytes left in the stream, `error.EndOfStream`
+/// is returned instead.
+///
+/// See also:
+/// * `peek`
+/// * `takeArray`
+pub fn peekArray(r: *Reader, comptime n: usize) Error!*[n]u8 {
+    return (try r.peek(n))[0..n];
+}
 
 /// Skips the next `n` bytes from the stream, advancing the seek position.
 ///
@@ -808,25 +808,25 @@ pub fn peekDelimiterExclusive(r: *Reader, delimiter: u8) DelimiterError![]u8 {
 //     return error.StreamTooLong;
 // }
 
-// /// Reads from the stream until specified byte is found, discarding all data,
-// /// including the delimiter.
-// ///
-// /// Returns number of bytes discarded, or `error.EndOfStream` if the delimiter
-// /// is not found.
-// ///
-// /// See also:
-// /// * `discardDelimiterExclusive`
-// /// * `discardDelimiterLimit`
-// pub fn discardDelimiterInclusive(r: *Reader, delimiter: u8) Error!usize {
-//     const n = discardDelimiterLimit(r, delimiter, .unlimited) catch |err| switch (err) {
-//         error.StreamTooLong => unreachable, // unlimited is passed
-//         else => |e| return e,
-//     };
-//     if (r.seek == r.end) return error.EndOfStream;
-//     assert(r.buffer[r.seek] == delimiter);
-//     toss(r, 1);
-//     return n + 1;
-// }
+/// Reads from the stream until specified byte is found, discarding all data,
+/// including the delimiter.
+///
+/// Returns number of bytes discarded, or `error.EndOfStream` if the delimiter
+/// is not found.
+///
+/// See also:
+/// * `discardDelimiterExclusive`
+/// * `discardDelimiterLimit`
+pub fn discardDelimiterInclusive(r: *Reader, delimiter: u8) Error!usize {
+    const n = discardDelimiterLimit(r, delimiter, .unlimited) catch |err| switch (err) {
+        error.StreamTooLong => unreachable, // unlimited is passed
+        else => |e| return e,
+    };
+    if (r.seek == r.end) return error.EndOfStream;
+    assert(r.buffer[r.seek] == delimiter);
+    toss(r, 1);
+    return n + 1;
+}
 
 // /// Reads from the stream until specified byte is found, discarding all data,
 // /// excluding the delimiter.
@@ -846,36 +846,36 @@ pub fn peekDelimiterExclusive(r: *Reader, delimiter: u8) DelimiterError![]u8 {
 //     };
 // }
 
-// pub const DiscardDelimiterLimitError = error{
-//     ReadFailed,
-//     /// The delimiter was not found within the limit.
-//     StreamTooLong,
-// };
+pub const DiscardDelimiterLimitError = error{
+    ReadFailed,
+    /// The delimiter was not found within the limit.
+    StreamTooLong,
+};
 
-// /// Reads from the stream until specified byte is found, discarding all data,
-// /// excluding the delimiter.
-// ///
-// /// Returns the number of bytes discarded.
-// ///
-// /// Succeeds if stream ends before delimiter found. End of stream can be
-// /// detected by checking if the delimiter is buffered.
-// pub fn discardDelimiterLimit(r: *Reader, delimiter: u8, limit: Limit) DiscardDelimiterLimitError!usize {
-//     var remaining = @intFromEnum(limit);
-//     while (remaining != 0) {
-//         const available = Limit.limited(remaining).slice(r.peekGreedy(1) catch |err| switch (err) {
-//             error.ReadFailed => return error.ReadFailed,
-//             error.EndOfStream => return @intFromEnum(limit) - remaining,
-//         });
-//         if (std.mem.indexOfScalar(u8, available, delimiter)) |delimiter_index| {
-//             r.toss(delimiter_index);
-//             remaining -= delimiter_index;
-//             return @intFromEnum(limit) - remaining;
-//         }
-//         r.toss(available.len);
-//         remaining -= available.len;
-//     }
-//     return error.StreamTooLong;
-// }
+/// Reads from the stream until specified byte is found, discarding all data,
+/// excluding the delimiter.
+///
+/// Returns the number of bytes discarded.
+///
+/// Succeeds if stream ends before delimiter found. End of stream can be
+/// detected by checking if the delimiter is buffered.
+pub fn discardDelimiterLimit(r: *Reader, delimiter: u8, limit: Limit) DiscardDelimiterLimitError!usize {
+    var remaining = @intFromEnum(limit);
+    while (remaining != 0) {
+        const available = Limit.limited(remaining).slice(r.peekGreedy(1) catch |err| switch (err) {
+            error.ReadFailed => return error.ReadFailed,
+            error.EndOfStream => return @intFromEnum(limit) - remaining,
+        });
+        if (std.mem.indexOfScalar(u8, available, delimiter)) |delimiter_index| {
+            r.toss(delimiter_index);
+            remaining -= delimiter_index;
+            return @intFromEnum(limit) - remaining;
+        }
+        r.toss(available.len);
+        remaining -= available.len;
+    }
+    return error.StreamTooLong;
+}
 
 /// Fills the buffer such that it contains at least `n` bytes, without
 /// advancing the seek position.
@@ -954,31 +954,31 @@ pub inline fn takeInt(r: *Reader, comptime T: type, endian: std.builtin.Endian) 
     return std.mem.readInt(T, try r.takeArray(n), endian);
 }
 
-// /// Asserts the buffer was initialized with a capacity at least `@bitSizeOf(T) / 8`.
-// pub inline fn peekInt(r: *Reader, comptime T: type, endian: std.builtin.Endian) Error!T {
-//     const n = @divExact(@typeInfo(T).int.bits, 8);
-//     return std.mem.readInt(T, try r.peekArray(n), endian);
-// }
+/// Asserts the buffer was initialized with a capacity at least `@bitSizeOf(T) / 8`.
+pub inline fn peekInt(r: *Reader, comptime T: type, endian: std.builtin.Endian) Error!T {
+    const n = @divExact(@typeInfo(T).int.bits, 8);
+    return std.mem.readInt(T, try r.peekArray(n), endian);
+}
 
-// /// Asserts the buffer was initialized with a capacity at least `n`.
-// pub fn takeVarInt(r: *Reader, comptime Int: type, endian: std.builtin.Endian, n: usize) Error!Int {
-//     assert(n <= @sizeOf(Int));
-//     return std.mem.readVarInt(Int, try r.take(n), endian);
-// }
+/// Asserts the buffer was initialized with a capacity at least `n`.
+pub fn takeVarInt(r: *Reader, comptime Int: type, endian: std.builtin.Endian, n: usize) Error!Int {
+    assert(n <= @sizeOf(Int));
+    return std.mem.readVarInt(Int, try r.take(n), endian);
+}
 
-// /// Obtains an unaligned pointer to the beginning of the stream, reinterpreted
-// /// as a pointer to the provided type, advancing the seek position.
-// ///
-// /// Asserts the buffer was initialized with a capacity at least `@sizeOf(T)`.
-// ///
-// /// See also:
-// /// * `peekStructPointer`
-// /// * `takeStruct`
-// pub fn takeStructPointer(r: *Reader, comptime T: type) Error!*align(1) T {
-//     // Only extern and packed structs have defined in-memory layout.
-//     comptime assert(@typeInfo(T).@"struct".layout != .auto);
-//     return @ptrCast(try r.takeArray(@sizeOf(T)));
-// }
+/// Obtains an unaligned pointer to the beginning of the stream, reinterpreted
+/// as a pointer to the provided type, advancing the seek position.
+///
+/// Asserts the buffer was initialized with a capacity at least `@sizeOf(T)`.
+///
+/// See also:
+/// * `peekStructPointer`
+/// * `takeStruct`
+pub fn takeStructPointer(r: *Reader, comptime T: type) Error!*align(1) T {
+    // Only extern and packed structs have defined in-memory layout.
+    comptime assert(@typeInfo(T).@"struct".layout != .auto);
+    return @ptrCast(try r.takeArray(@sizeOf(T)));
+}
 
 // /// Obtains an unaligned pointer to the beginning of the stream, reinterpreted
 // /// as a pointer to the provided type, without advancing the seek position.
@@ -994,30 +994,30 @@ pub inline fn takeInt(r: *Reader, comptime T: type, endian: std.builtin.Endian) 
 //     return @ptrCast(try r.peekArray(@sizeOf(T)));
 // }
 
-// /// Asserts the buffer was initialized with a capacity at least `@sizeOf(T)`.
-// ///
-// /// This function is inline to avoid referencing `std.mem.byteSwapAllFields`
-// /// when `endian` is comptime-known and matches the host endianness.
-// ///
-// /// See also:
-// /// * `takeStructPointer`
-// /// * `peekStruct`
-// pub inline fn takeStruct(r: *Reader, comptime T: type, endian: std.builtin.Endian) Error!T {
-//     switch (@typeInfo(T)) {
-//         .@"struct" => |info| switch (info.layout) {
-//             .auto => @compileError("ill-defined memory layout"),
-//             .@"extern" => {
-//                 var res = (try r.takeStructPointer(T)).*;
-//                 if (native_endian != endian) std.mem.byteSwapAllFields(T, &res);
-//                 return res;
-//             },
-//             .@"packed" => {
-//                 return @bitCast(try takeInt(r, info.backing_integer.?, endian));
-//             },
-//         },
-//         else => @compileError("not a struct"),
-//     }
-// }
+/// Asserts the buffer was initialized with a capacity at least `@sizeOf(T)`.
+///
+/// This function is inline to avoid referencing `std.mem.byteSwapAllFields`
+/// when `endian` is comptime-known and matches the host endianness.
+///
+/// See also:
+/// * `takeStructPointer`
+/// * `peekStruct`
+pub inline fn takeStruct(r: *Reader, comptime T: type, endian: std.builtin.Endian) Error!T {
+    switch (@typeInfo(T)) {
+        .@"struct" => |info| switch (info.layout) {
+            .auto => @compileError("ill-defined memory layout"),
+            .@"extern" => {
+                var res = (try r.takeStructPointer(T)).*;
+                if (native_endian != endian) std.mem.byteSwapAllFields(T, &res);
+                return res;
+            },
+            .@"packed" => {
+                return @bitCast(try takeInt(r, info.backing_integer.?, endian));
+            },
+        },
+        else => @compileError("not a struct"),
+    }
+}
 
 // /// Asserts the buffer was initialized with a capacity at least `@sizeOf(T)`.
 // ///
